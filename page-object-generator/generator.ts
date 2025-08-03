@@ -888,9 +888,28 @@ const ELEMENT_OPERATIONS: Record<string, string[]> = {
 function generateElementMethods(fieldName: string, elementType: string, inputType: string, language: string): string[] {
   const methods: string[] = [];
   const elementOps = ELEMENT_OPERATIONS as any;
-  const operations = elementOps[elementType]?.[inputType] || elementOps[elementType]?.default || elementOps.div.default;
   
-  operations.forEach((operation: string) => {
+  // Get operations based on element type and input type
+  let operations: string[] = [];
+  
+  // First try to get operations for the specific element type
+  if (elementOps[elementType]) {
+    operations = elementOps[elementType];
+  } else if (elementOps[inputType]) {
+    // If element type not found, try input type
+    operations = elementOps[inputType];
+  } else if (elementOps['input']) {
+    // Fallback to input operations
+    operations = elementOps['input'];
+  } else {
+    // Final fallback to button operations
+    operations = elementOps['button'] || ['click'];
+  }
+  
+  // Limit to first 20 operations to avoid overwhelming output
+  const limitedOperations = operations.slice(0, 20);
+  
+  limitedOperations.forEach((operation: string) => {
     const methodName = `${operation}${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
     
     switch (language) {
@@ -926,10 +945,14 @@ function generateElementMethods(fieldName: string, elementType: string, inputTyp
 
 // Helper function to generate table-specific methods
 function generateTableMethods(fieldName: string, elementData: ElementData, language: string): string {
-  const tableOperations = ELEMENT_OPERATIONS.table;
+  const elementOps = ELEMENT_OPERATIONS as any;
+  const tableOperations = elementOps.table || elementOps.table || ['click', 'getText', 'getRowCount', 'getColumnCount', 'getCellText', 'clickRow', 'clickCell'];
   const methods: string[] = [];
   
-  tableOperations.forEach((operation: string) => {
+  // Limit to first 10 operations for tables
+  const limitedOperations = tableOperations.slice(0, 10);
+  
+  limitedOperations.forEach((operation: string) => {
     const methodName = `${operation}${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
     
     switch (language) {
@@ -965,10 +988,14 @@ function generateTableMethods(fieldName: string, elementData: ElementData, langu
 
 // Helper function to generate dropdown-specific methods
 function generateDropdownMethods(fieldName: string, elementData: ElementData, language: string): string {
-  const dropdownOperations = ELEMENT_OPERATIONS.select;
+  const elementOps = ELEMENT_OPERATIONS as any;
+  const dropdownOperations = elementOps.select || elementOps.dropdown || ['selectOption', 'selectOptionByText', 'selectOptionByIndex', 'getSelectedOption', 'getSelectedValue', 'getOptions', 'openDropdown', 'closeDropdown'];
   const methods: string[] = [];
   
-  dropdownOperations.forEach((operation: string) => {
+  // Limit to first 10 operations for dropdowns
+  const limitedOperations = dropdownOperations.slice(0, 10);
+  
+  limitedOperations.forEach((operation: string) => {
     const methodName = `${operation}${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
     
     switch (language) {
