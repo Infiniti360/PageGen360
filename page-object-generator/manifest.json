@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Page Object Generator",
+    "version": "1.0",
+    "description": "Generate Page Object Models (POM) for Cypress, Selenium Java, and Selenium Python from any webpage",
+    "permissions": ["scripting", "tabs", "activeTab"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content-script.js"]
+      }
+    ]
+  }
+  

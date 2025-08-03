@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced POM Generator Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .form-group { margin: 10px 0; }
+        label { display: inline-block; width: 120px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        .action-btn { margin: 2px; padding: 4px 8px; }
+        .dropdown { margin: 10px 0; }
+        .multi-select { margin: 10px 0; }
+        .table-container { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Enhanced POM Generator Test Page</h1>
+    
+    <!-- Basic Form Elements -->
+    <div class="section">
+        <h2>Form Elements</h2>
+        
+        <div class="form-group">
+            <label for="email-input">Email:</label>
+            <input type="email" id="email-input" name="email" placeholder="Enter your email" data-test-id="email-field">
+        </div>
+        
+        <div class="form-group">
+            <label for="password-input">Password:</label>
+            <input type="password" id="password-input" name="password" placeholder="Enter password" data-test-id="password-field">
+        </div>
+        
+        <div class="form-group">
+            <label for="search-input">Search:</label>
+            <input type="search" id="search-input" name="search" placeholder="Search..." data-test-id="search-field">
+        </div>
+        
+        <div class="form-group">
+            <label for="number-input">Age:</label>
+            <input type="number" id="number-input" name="age" min="18" max="100" data-test-id="age-field">
+        </div>
+        
+        <div class="form-group">
+            <label for="date-input">Birth Date:</label>
+            <input type="date" id="date-input" name="birthdate" data-test-id="birthdate-field">
+        </div>
+        
+        <div class="form-group">
+            <label for="file-input">Upload File:</label>
+            <input type="file" id="file-input" name="file" data-test-id="file-upload">
+        </div>
+        
+        <div class="form-group">
+            <label for="range-input">Rating:</label>
+            <input type="range" id="range-input" name="rating" min="1" max="10" data-test-id="rating-slider">
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="subscribe" data-test-id="subscribe-checkbox">
+                Subscribe to newsletter
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>Gender:</label>
+            <label><input type="radio" name="gender" value="male" data-test-id="gender-male"> Male</label>
+            <label><input type="radio" name="gender" value="female" data-test-id="gender-female"> Female</label>
+        </div>
+    </div>
+    
+    <!-- Dropdowns -->
+    <div class="section">
+        <h2>Dropdown Elements</h2>
+        
+        <div class="dropdown">
+            <label for="country-select">Country:</label>
+            <select id="country-select" name="country" data-test-id="country-dropdown">
+                <option value="">Select Country</option>
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="au">Australia</option>
+            </select>
+        </div>
+        
+        <div class="dropdown">
+            <label for="language-select">Languages:</label>
+            <select id="language-select" name="languages" multiple data-test-id="language-multiselect">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+            </select>
+        </div>
+        
+        <div class="dropdown">
+            <label for="custom-dropdown">Custom Dropdown:</label>
+            <div class="custom-dropdown" data-test-id="custom-dropdown" role="combobox">
+                <button class="dropdown-toggle" data-test-id="dropdown-toggle">Select Option</button>
+                <ul class="dropdown-menu" data-test-id="dropdown-menu">
+                    <li data-value="option1">Option 1</li>
+                    <li data-value="option2">Option 2</li>
+                    <li data-value="option3">Option 3</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tables -->
+    <div class="section">
+        <h2>Table Elements</h2>
+        
+        <div class="table-container">
+            <table id="users-table" data-test-id="users-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" data-test-id="select-all-checkbox"></th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-row-id="1">
+                        <td><input type="checkbox" data-test-id="row-1-checkbox"></td>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Admin</td>
+                        <td>
+                            <button class="action-btn" data-action="edit" data-test-id="edit-user-1">Edit</button>
+                            <button class="action-btn" data-action="delete" data-test-id="delete-user-1">Delete</button>
+                            <a href="#" class="action-btn" data-action="view" data-test-id="view-user-1">View</a>
+                        </td>
+                    </tr>
+                    <tr data-row-id="2">
+                        <td><input type="checkbox" data-test-id="row-2-checkbox"></td>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>User</td>
+                        <td>
+                            <button class="action-btn" data-action="edit" data-test-id="edit-user-2">Edit</button>
+                            <button class="action-btn" data-action="delete" data-test-id="delete-user-2">Delete</button>
+                            <a href="#" class="action-btn" data-action="view" data-test-id="view-user-2">View</a>
+                        </td>
+                    </tr>
+                    <tr data-row-id="3">
+                        <td><input type="checkbox" data-test-id="row-3-checkbox"></td>
+                        <td>Bob Johnson</td>
+                        <td>bob@example.com</td>
+                        <td>Manager</td>
+                        <td>
+                            <button class="action-btn" data-action="edit" data-test-id="edit-user-3">Edit</button>
+                            <button class="action-btn" data-action="delete" data-test-id="delete-user-3">Delete</button>
+                            <a href="#" class="action-btn" data-action="view" data-test-id="view-user-3">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="table-container">
+            <table id="products-table" data-test-id="products-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-product-id="p1">
+                        <td>P001</td>
+                        <td>Laptop</td>
+                        <td>$999</td>
+                        <td>Electronics</td>
+                        <td>
+                            <button class="action-btn" data-action="edit" data-test-id="edit-product-1">Edit</button>
+                            <button class="action-btn" data-action="delete" data-test-id="delete-product-1">Delete</button>
+                        </td>
+                    </tr>
+                    <tr data-product-id="p2">
+                        <td>P002</td>
+                        <td>Mouse</td>
+                        <td>$25</td>
+                        <td>Accessories</td>
+                        <td>
+                            <button class="action-btn" data-action="edit" data-test-id="edit-product-2">Edit</button>
+                            <button class="action-btn" data-action="delete" data-test-id="delete-product-2">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Buttons and Links -->
+    <div class="section">
+        <h2>Buttons and Links</h2>
+        
+        <button type="submit" data-test-id="submit-button" class="btn btn-primary">Submit Form</button>
+        <button type="reset" data-test-id="reset-button" class="btn btn-secondary">Reset Form</button>
+        <button type="button" data-test-id="cancel-button" class="btn btn-danger">Cancel</button>
+        
+        <a href="#" data-test-id="help-link" class="link">Help</a>
+        <a href="#" data-test-id="contact-link" class="link">Contact Us</a>
+        <a href="#" data-test-id="download-link" class="link" download>Download PDF</a>
+    </div>
+    
+    <!-- Images -->
+    <div class="section">
+        <h2>Images</h2>
+        
+        <img src="https://via.placeholder.com/150" alt="Profile Picture" data-test-id="profile-image" class="profile-img">
+        <img src="https://via.placeholder.com/200x100" alt="Banner Image" data-test-id="banner-image" class="banner-img">
+        <a href="#" data-test-id="logo-link">
+            <img src="https://via.placeholder.com/100x50" alt="Company Logo" data-test-id="logo-image">
+        </a>
+    </div>
+    
+    <!-- Custom Components -->
+    <div class="section">
+        <h2>Custom Components</h2>
+        
+        <div class="custom-component" data-test-id="custom-component" role="button">
+            <span class="component-text">Custom Interactive Component</span>
+        </div>
+        
+        <div class="toggle-switch" data-test-id="toggle-switch" role="switch" aria-checked="false">
+            <span class="toggle-label">Enable Notifications</span>
+        </div>
+        
+        <div class="progress-bar" data-test-id="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill" style="width: 75%"></div>
+        </div>
+    </div>
+    
+    <!-- Interactive Divs and Spans -->
+    <div class="section">
+        <h2>Interactive Divs and Spans</h2>
+        
+        <div class="clickable-div" data-test-id="clickable-div" onclick="alert('Div clicked!')">
+            Clickable Div Element
+        </div>
+        
+        <span class="clickable-span" data-test-id="clickable-span" onclick="alert('Span clicked!')">
+            Clickable Span Element
+        </span>
+        
+        <div class="hoverable-element" data-test-id="hoverable-element" onmouseover="this.style.backgroundColor='yellow'" onmouseout="this.style.backgroundColor=''">
+            Hoverable Element
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown functionality
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const menu = this.nextElementSibling;
+                    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+                });
+            });
+            
+            // Table row selection
+            const tableCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            tableCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.dataset.testId === 'select-all-checkbox') {
+                        const rowCheckboxes = document.querySelectorAll('input[data-test-id^="row-"]');
+                        rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                    }
+                });
+            });
+            
+            // Action button handlers
+            const actionButtons = document.querySelectorAll('[data-action]');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.dataset.action;
+                    const rowId = this.closest('tr').dataset.rowId || this.closest('tr').dataset.productId;
+                    alert(`${action} action for row ${rowId}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
