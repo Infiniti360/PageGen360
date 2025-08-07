@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "pom": {
+    "id": "8b334189-f913-44cb-b2dc-5784faa593de",
+    "url": "https://httpbin.org/",
+    "version": "1.0.0",
+    "framework": "cypress",
+    "language": "typescript",
+    "className": "HttpbinorgPage",
+    "elementCount": 11,
+    "methodCount": 30,
+    "generatedAt": "2025-08-07T05:17:22.838Z",
+    "metadata": {
+      "pageTitle": "httpbin.org",
+      "loginRequired": false,
+      "browser": "chrome",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/138.0.0.0 Safari/537.36",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "timestamp": "2025-08-07T05:17:22.841Z"
+    }
+  },
+  "warnings": [],
+  "errors": [],
+  "metadata": {
+    "generationTime": 3543,
+    "elementCount": 11,
+    "methodCount": 30,
+    "framework": "cypress",
+    "language": "typescript",
+    "browser": "chrome",
+    "timestamp": "2025-08-07T05:17:22.841Z"
+  }
+}

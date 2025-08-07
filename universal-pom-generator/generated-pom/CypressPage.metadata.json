@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "pom": {
+    "framework": "cypress",
+    "language": "typescript",
+    "className": "CypressPage",
+    "elementCount": 3,
+    "methodCount": 3
+  }
+}
