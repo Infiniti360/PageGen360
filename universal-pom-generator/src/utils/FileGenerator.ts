@@ -353,4 +353,37 @@ export class FileGenerator {
         return 'ts';
     }
   }
+
+  /**
+   * List all generated files
+   */
+  async listGeneratedFiles(outputDir: string = './generated-pom'): Promise<string[]> {
+    this.logger.debug(`Listing generated files in: ${outputDir}`);
+
+    try {
+      if (!fs.existsSync(outputDir)) {
+        this.logger.debug('Output directory does not exist');
+        return [];
+      }
+
+      const files: string[] = [];
+      const items = fs.readdirSync(outputDir, { withFileTypes: true });
+
+      for (const item of items) {
+        if (item.isFile()) {
+          files.push(path.join(outputDir, item.name));
+        } else if (item.isDirectory()) {
+          const subDir = path.join(outputDir, item.name);
+          const subFiles = await this.listGeneratedFiles(subDir);
+          files.push(...subFiles);
+        }
+      }
+
+      this.logger.debug(`Found ${files.length} generated files`);
+      return files;
+    } catch (error) {
+      this.logger.error(`Error listing generated files: ${error}`);
+      return [];
+    }
+  }
 } 

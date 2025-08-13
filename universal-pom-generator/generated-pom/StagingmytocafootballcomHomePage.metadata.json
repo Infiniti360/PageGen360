@@ -1,37 +1,15 @@
 {
-  "success": true,
-  "pom": {
-    "id": "832de9f5-f86f-4c9b-9cd9-1ce7a4ff782b",
-    "url": "https://staging.my.tocafootball.com/home",
-    "version": "1.0.0",
-    "framework": "cypress",
-    "language": "typescript",
-    "className": "StagingmytocafootballcomHomePage",
-    "elementCount": 35,
-    "methodCount": 76,
-    "generatedAt": "2025-08-07T05:19:25.260Z",
-    "metadata": {
-      "pageTitle": "MyTOCA - Member Portal",
-      "loginRequired": true,
-      "authenticationMethod": "basic",
-      "browser": "chrome",
-      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/138.0.0.0 Safari/537.36",
-      "viewport": {
-        "width": 1920,
-        "height": 1080
-      },
-      "timestamp": "2025-08-07T05:19:25.262Z"
-    }
+  "pageTitle": "MyTOCA - Member Portal",
+  "loginRequired": true,
+  "authenticationMethod": "basic",
+  "browser": "chrome",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
   },
-  "warnings": [],
-  "errors": [],
-  "metadata": {
-    "generationTime": 15144,
-    "elementCount": 35,
-    "methodCount": 76,
-    "framework": "cypress",
-    "language": "typescript",
-    "browser": "chrome",
-    "timestamp": "2025-08-07T05:19:25.262Z"
-  }
+  "timestamp": "2025-08-08T10:12:05.376Z",
+  "llmEnhanced": true,
+  "llmProvider": "openai",
+  "llmModel": "gpt-4-turbo"
 }

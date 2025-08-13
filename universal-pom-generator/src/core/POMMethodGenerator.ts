@@ -5,7 +5,7 @@ export class POMMethodGenerator {
   private logger: Logger;
 
   constructor() {
-    this.logger = new Logger();
+    this.logger = new Logger('debug').child('POMMethodGenerator');
   }
 
   /**
@@ -218,7 +218,9 @@ export class POMMethodGenerator {
     if (element.id) {
       name += element.id.charAt(0).toUpperCase() + element.id.slice(1);
     } else if (element.className) {
-      const className = element.className.split(' ')[0];
+      const className = element.className && typeof element.className === 'string' 
+        ? element.className.split(' ')[0] 
+        : '';
       if (className) {
         name += className.charAt(0).toUpperCase() + className.slice(1);
       }

@@ -5,7 +5,7 @@ export class ElementDetector {
   private logger: Logger;
 
   constructor() {
-    this.logger = new Logger();
+    this.logger = new Logger('debug').child('ElementDetector');
   }
 
   /**
@@ -189,7 +189,7 @@ export class ElementDetector {
     }
 
     // Add class if available
-    if (element.className) {
+    if (element.className && typeof element.className === 'string') {
       const classes = element.className.split(' ').filter(c => c.trim());
       if (classes.length > 0) {
         selector += `.${classes.join('.')}`;
@@ -224,7 +224,7 @@ export class ElementDetector {
     }
 
     // Add class if available
-    if (element.className) {
+    if (element.className && typeof element.className === 'string') {
       const classes = element.className.split(' ').filter(c => c.trim());
       if (classes.length > 0) {
         xpath += `[contains(@class, "${classes[0]}")]`;
@@ -292,8 +292,12 @@ export class ElementDetector {
           if (element.id) {
             return '#' + element.id;
           }
-          if (element.className) {
+          if (element.className && typeof element.className === 'string') {
             return '.' + element.className.split(' ').join('.');
+          } else if (element.className) {
+            // Handle non-string className (like SVGAnimatedString)
+            const classNameStr = String(element.className);
+            return '.' + classNameStr.split(' ').join('.');
           }
           return element.tagName.toLowerCase();
         }
@@ -328,8 +332,12 @@ export class ElementDetector {
       parts.push(element.id);
     }
     
-    if (element.className) {
+    if (element.className && typeof element.className === 'string') {
       parts.push(element.className.split(' ')[0]);
+    } else if (element.className) {
+      // Handle non-string className (like SVGAnimatedString)
+      const classNameStr = String(element.className);
+      parts.push(classNameStr.split(' ')[0]);
     }
     
     if (element.text) {

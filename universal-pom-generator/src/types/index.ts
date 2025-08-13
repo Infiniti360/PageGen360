@@ -54,6 +54,10 @@ export interface POMMethod {
   isGetter: boolean;
   isSetter: boolean;
   isAction: boolean;
+  isAssertion: boolean; // NEW: For assertion methods
+  supportsChaining: boolean; // NEW: For method chaining
+  frameworkSpecific: boolean; // NEW: Framework-specific implementations
+  methodType: 'getter' | 'setter' | 'action' | 'assertion' | 'utility' | 'validation'; // NEW: Method categorization
 }
 
 export interface POMParameter {
@@ -81,12 +85,18 @@ export interface POMMetadata {
   mcpEnhanced?: boolean;
   mcpTools?: string[];
   mcpServerUrl?: string;
+  industrialStandards?: Record<string, any>; // Add industrialStandards property
+  enhanced?: boolean; // Add enhanced property
+  qualityMetrics?: Record<string, any>; // Add qualityMetrics property
+  statistics?: Record<string, any>; // Add statistics property
 }
 
 // Generation Options
 export interface GenerationOptions {
   framework: 'selenium' | 'playwright' | 'cypress' | 'puppeteer' | 'testcafe';
   language: 'javascript' | 'typescript' | 'python' | 'java' | 'csharp';
+  url?: string; // Add URL property for page type determination
+  elements?: Element[]; // Add elements property for code generation
   includeTests?: boolean;
   includeComments?: boolean;
   includeWaitStrategies?: boolean;
@@ -98,6 +108,40 @@ export interface GenerationOptions {
   versionManagement?: VersionConfig;
 }
 
+// Enhanced Generation Options
+export interface EnhancedGenerationOptions extends GenerationOptions {
+  includeMethodChaining?: boolean;
+  includeComprehensiveAssertions?: boolean;
+  includeUtilityMethods?: boolean;
+  includeValidationMethods?: boolean;
+  includeAccessibilityChecks?: boolean;
+  includeResponsiveValidation?: boolean;
+  baseClass?: string;
+  customAssertions?: string[];
+  customActions?: string[];
+}
+
+// Framework-specific configuration
+export interface FrameworkConfig {
+  baseClass: string;
+  imports: string[];
+  locatorPattern: 'selector' | 'locator' | 'element' | 'cypress';
+  chainingReturnType: string;
+  asyncSupport: boolean;
+  assertionLibrary: string;
+}
+
+// Method templates for different frameworks
+export interface MethodTemplate {
+  cypress: string;
+  playwright: string;
+  selenium: string;
+  puppeteer: string;
+  python?: string;
+  java?: string;
+  csharp?: string;
+}
+
 // Authentication Types
 export interface LoginConfig {
   type: 'oauth2' | 'saml' | 'basic' | 'token' | 'sso' | 'custom';
@@ -105,6 +149,7 @@ export interface LoginConfig {
   config?: Record<string, any>;
   customScript?: string;
   loginUrl?: string;
+  targetUrl?: string; // URL to navigate to after successful login
   selectors?: {
     usernameField?: string;
     passwordField?: string;
@@ -143,6 +188,20 @@ export interface MCPConfig {
   credentials?: MCPCredentials;
   tools: string[];
   contextManagement?: boolean;
+  aiConfig?: AIConfig;
+  framework?: string; // Add framework property
+  language?: string; // Add language property
+}
+
+// AI Configuration Types
+export interface AIConfig {
+  provider: 'openai' | 'claude' | 'custom';
+  apiKey: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  endpoint?: string;
+  headers?: Record<string, string>;
 }
 
 export interface MCPCredentials {
@@ -358,6 +417,8 @@ export const POMSchema = z.object({
 export const GenerationOptionsSchema = z.object({
   framework: z.enum(['selenium', 'playwright', 'cypress', 'puppeteer', 'testcafe']),
   language: z.enum(['javascript', 'typescript', 'python', 'java', 'csharp']),
+  url: z.string().optional(),
+  elements: z.array(ElementSchema).optional(),
   includeTests: z.boolean().optional(),
   includeComments: z.boolean().optional(),
   includeWaitStrategies: z.boolean().optional(),
@@ -405,6 +466,8 @@ export const GenerationOptionsSchema = z.object({
     }).optional(),
     tools: z.array(z.string()),
     contextManagement: z.boolean().optional(),
+    framework: z.string().optional(),
+    language: z.string().optional(),
   }).optional(),
   browser: z.object({
     name: z.enum(['chrome', 'firefox', 'safari', 'edge']),

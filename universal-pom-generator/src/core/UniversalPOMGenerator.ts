@@ -128,37 +128,57 @@ export class UniversalPOMGenerator {
       const elements = await this.elementDetector.detectElements(browser);
       this.logger.debug(`Detected ${elements.length} elements`);
 
-      // Generate methods
-      const methods = await this.methodGenerator.generateMethods(elements, validatedOptions as any);
-      this.logger.debug(`Generated ${methods.length} methods`);
-
-      // Generate code
-      const code = await this.codeGenerator.generateCode(elements, methods, validatedOptions as any);
-      this.logger.debug('Code generation completed');
-
-      // Create POM object
-      const pom: POM = {
-        id: uuidv4(),
-        url,
-        version: '1.0.0',
-        framework: validatedOptions.framework,
-        language: validatedOptions.language,
-        elements,
-        methods,
-        imports: code.imports,
-        className: this.generateClassName(url),
-        generatedCode: code.code, // Include the generated code
-        generatedAt: new Date(),
-        metadata: {
-          pageTitle: await this.browserManager.getPageTitle(browser),
-          loginRequired: !!validatedOptions.loginConfig,
-          authenticationMethod: validatedOptions.loginConfig?.type || undefined,
-          browser: validatedOptions.browser?.name || 'chrome',
-          userAgent: await this.browserManager.getUserAgent(browser),
-          viewport: validatedOptions.browser?.viewport || { width: 1920, height: 1080 },
-          timestamp: new Date(),
-        } as any,
+      // Get page data
+      const pageData = {
+        title: await this.browserManager.getPageTitle(browser),
+        url: url,
+        description: await this.browserManager.getPageDescription(browser),
       };
+
+      // Use AI-powered POM generation if MCP is configured with AI
+      let pom: POM;
+      let methods: any[] = [];
+      
+      if ((validatedOptions.mcpIntegration as any)?.aiConfig) {
+        this.logger.debug('Using AI-powered POM generation via MCP');
+        pom = await this.mcpManager.generatePOMWithAI(elements, validatedOptions as any, pageData);
+        methods = pom.methods;
+      } else {
+        // Fallback to internal logic
+        this.logger.debug('Using internal POM generation logic');
+        
+        // Generate methods using internal logic
+        methods = await this.methodGenerator.generateMethods(elements, validatedOptions as any);
+        this.logger.debug(`Generated ${methods.length} methods`);
+
+        // Generate code using internal logic
+        const code = await this.codeGenerator.generateCode(elements, methods, validatedOptions as any);
+        this.logger.debug('Code generation completed');
+
+        // Create POM object
+        pom = {
+          id: uuidv4(),
+          url,
+          version: '1.0.0',
+          framework: validatedOptions.framework,
+          language: validatedOptions.language,
+          elements,
+          methods,
+          imports: code.imports,
+          className: this.generateClassName(url),
+          generatedCode: code.code, // Include the generated code
+          generatedAt: new Date(),
+          metadata: {
+            pageTitle: pageData.title,
+            loginRequired: !!validatedOptions.loginConfig,
+            authenticationMethod: validatedOptions.loginConfig?.type || undefined,
+            browser: validatedOptions.browser?.name || 'chrome',
+            userAgent: await this.browserManager.getUserAgent(browser),
+            viewport: validatedOptions.browser?.viewport || { width: 1920, height: 1080 },
+            timestamp: new Date(),
+          } as any,
+        };
+      }
 
       // Apply AI enhancements if LLM is configured
       if (validatedOptions.llmIntegration) {

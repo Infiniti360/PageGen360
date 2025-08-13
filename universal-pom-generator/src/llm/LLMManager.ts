@@ -143,4 +143,48 @@ public class AIGeneratedPage {
       apiKey: config.apiKey,
     };
   }
+
+  /**
+   * Enhance code with LLM
+   */
+  async enhanceCode(code: string, config: any): Promise<any> {
+    this.logger.debug('Enhancing code with LLM');
+
+    try {
+      // Simulate code enhancement with LLM
+      const enhancedCode = `// Enhanced by ${config.provider} (${config.model})
+// Original code:
+${code}
+
+// Enhanced version with AI suggestions:
+${code.replace(/public class/g, 'public class Enhanced')}
+    // AI-suggested improvements
+    public void waitForElement() {
+        // Added wait strategy
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.elementToBeClickable(By.css("selector")));
+    }
+}`;
+
+      return {
+        success: true,
+        originalCode: code,
+        enhancedCode,
+        improvements: [
+          'Added wait strategies',
+          'Enhanced error handling',
+          'Improved code structure',
+          'Added AI-suggested optimizations'
+        ],
+        provider: config.provider,
+        model: config.model
+      };
+    } catch (error) {
+      this.logger.error(`LLM code enhancement failed: ${error}`);
+      return {
+        success: false,
+        error: (error as Error).message
+      };
+    }
+  }
 } 

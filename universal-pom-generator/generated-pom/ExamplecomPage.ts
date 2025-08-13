@@ -1,28 +1,46 @@
-export class CypressPage {
-  constructor() {}
+export class PlaywrightPage {
+  constructor(private page: Page) {}
 
-  getMoreinformation() {
-    return cy.get("#moreinformation");
+  getExampledomain(): WebElement {
+    return page.locator("#exampledomain");
   }
 
-  clickMoreinformation() {
-    cy.get("#moreinformation").click();
+  waitExampledomain(timeout: number = 5000): void {
+    page.locator("#exampledomain").waitFor({ timeout: timeout });
   }
 
-  waitMoreinformation(timeout: number = 5000) {
-    cy.get("#moreinformation").should('be.visible');
+  getMoreinformation(): WebElement {
+    return page.locator("#moreinformation");
   }
 
-  waitForPageLoad() {
-    cy.wait(1000);
+  waitMoreinformation(timeout: number = 5000): void {
+    page.locator("#moreinformation").waitFor({ timeout: timeout });
   }
 
-  getPageTitle() {
-    return cy.title();
+  getMoreinformation(): WebElement {
+    return page.locator("#moreinformation");
   }
 
-  takeScreenshot(filename: string) {
-    cy.screenshot(filename || 'screenshot');
+  clickMoreinformation(): void {
+    page.locator("#moreinformation").click();
+  }
+
+  waitMoreinformation(timeout: number = 5000): void {
+    page.locator("#moreinformation").waitFor({ timeout: timeout });
+  }
+
+  waitForPageLoad(): void {
+    page.waitForLoadState('networkidle');
+  }
+
+  getPageTitle(): string {
+    return page.title();
+  }
+
+  takeScreenshot(filename: string): string {
+    const screenshotPath = filename || 'screenshot.png';
+        await page.screenshot({ path: screenshotPath });
+        return screenshotPath;
   }
 
 }

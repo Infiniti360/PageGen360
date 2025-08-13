@@ -141,4 +141,62 @@ export class IntegrationManager {
       throw error;
     }
   }
+
+  /**
+   * Check compatibility between framework, language, and browser
+   */
+  async checkCompatibility(config: { framework: string; language: string; browser: string }): Promise<any> {
+    this.logger.debug(`Checking compatibility for: ${config.framework}, ${config.language}, ${config.browser}`);
+
+    try {
+      const compatibility = {
+        framework: config.framework,
+        language: config.language,
+        browser: config.browser,
+        compatible: true,
+        issues: [] as string[],
+        recommendations: [] as string[]
+      };
+
+      // Check framework-language compatibility
+      const frameworkLanguageCompatibility: Record<string, string[]> = {
+        playwright: ['typescript', 'javascript', 'python', 'java', 'csharp'],
+        selenium: ['typescript', 'javascript', 'python', 'java', 'csharp'],
+        cypress: ['typescript', 'javascript'],
+        puppeteer: ['typescript', 'javascript', 'python'],
+        testcafe: ['typescript', 'javascript']
+      };
+
+      if (!frameworkLanguageCompatibility[config.framework]?.includes(config.language)) {
+        compatibility.compatible = false;
+        compatibility.issues.push(`${config.framework} doesn't support ${config.language}`);
+        compatibility.recommendations.push(`Use one of: ${frameworkLanguageCompatibility[config.framework]?.join(', ')}`);
+      }
+
+      // Check browser compatibility
+      const browserCompatibility: Record<string, string[]> = {
+        chrome: ['playwright', 'selenium', 'puppeteer', 'cypress', 'testcafe'],
+        firefox: ['playwright', 'selenium', 'cypress'],
+        safari: ['playwright', 'selenium'],
+        edge: ['playwright', 'selenium']
+      };
+
+      if (!browserCompatibility[config.browser]?.includes(config.framework)) {
+        compatibility.compatible = false;
+        compatibility.issues.push(`${config.browser} doesn't support ${config.framework}`);
+        compatibility.recommendations.push(`Use one of: ${browserCompatibility[config.browser]?.join(', ')}`);
+      }
+
+      return {
+        success: true,
+        compatibility
+      };
+    } catch (error) {
+      this.logger.error(`Compatibility check failed: ${error}`);
+      return {
+        success: false,
+        error: (error as Error).message
+      };
+    }
+  }
 } 
