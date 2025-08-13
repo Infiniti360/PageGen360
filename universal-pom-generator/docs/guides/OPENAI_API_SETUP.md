@@ -10,7 +10,7 @@ This guide explains how to set up and configure the OpenAI API key for the Unive
 
 ```bash
 # Set the API key for current session
-export OPENAI_API_KEY={OPEN_API_KEY}
+#export OPENAI_API_KEY={OPEN_API_KEY}
 
 # Make it permanent (add to shell profile)
 echo 'export OPENAI_API_KEY={OPEN_API_KEY}' >> ~/.zshrc
