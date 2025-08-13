@@ -10,10 +10,10 @@ This guide explains how to set up and configure the OpenAI API key for the Unive
 
 ```bash
 # Set the API key for current session
-export OPENAI_API_KEY="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"
+export OPENAI_API_KEY={OPEN_API_KEY}
 
 # Make it permanent (add to shell profile)
-echo 'export OPENAI_API_KEY="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"' >> ~/.zshrc
+echo 'export OPENAI_API_KEY={OPEN_API_KEY}' >> ~/.zshrc
 ```
 
 ### **Method 2: .env File (Recommended)**
@@ -24,7 +24,7 @@ Create a `.env` file in the project root:
 # Create .env file
 cat > .env << 'EOF'
 # OpenAI API Configuration
-OPENAI_API_KEY=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
+OPENAI_API_KEY={OPEN_API_KEY}
 
 # AI Model Configuration
 OPENAI_MODEL=gpt-4-turbo
@@ -51,7 +51,7 @@ EOF
 ```bash
 # Pass API key directly in command
 node cli-universal.js --url https://example.com \
-  --api-key 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
+  --api-key {OPEN_API_KEY}
 ```
 
 ## 🔧 **Configuration Options**
