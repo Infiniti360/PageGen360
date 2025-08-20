@@ -186,7 +186,8 @@ export class FileGenerator {
         content += `import { ${className} } from './${className}';\n\n`;
         break;
       case 'cypress':
-        content += `// Cypress Test File\n\n`;
+        content += `// Cypress Test File\n`;
+        content += `import { ${className} } from './${className}';\n\n`;
         break;
     }
 
@@ -224,7 +225,7 @@ export class FileGenerator {
         content += `  });\n`;
         content += `});\n`;
         break;
-      case 'cypress':
+      case 'cypress': {
         content += `describe('${className} Tests', () => {\n`;
         content += `  const pom = new ${className}();\n\n`;
         content += `  beforeEach(() => {\n`;
@@ -234,11 +235,60 @@ export class FileGenerator {
         content += `    cy.title().should('exist');\n`;
         content += `  });\n\n`;
         content += `  it('should have interactive elements', () => {\n`;
-        content += `    // Test that elements are accessible\n`;
         content += `    cy.get('body').should('be.visible');\n`;
-        content += `  });\n`;
+        content += `  });\n\n`;
+
+        // Auto-generate tests from POM methods
+        const maxTests = 30;
+        let generated = 0;
+        const addTest = (t: string) => { if (generated < maxTests) { content += t + '\n'; generated++; } };
+
+        for (const m of pom.methods) {
+          const name = m.name || '';
+          // getAllX
+          if (/^getAll[A-Z]/.test(name)) {
+            addTest(`  it('${name} returns non-empty collection', () => {\n    pom.${name}().its('length').should('be.greaterThan', 0);\n  });`);
+            continue;
+          }
+          // getXAt
+          if (/^get.+At$/.test(name)) {
+            addTest(`  it('${name}(0) should exist', () => {\n    pom.${name}(0).should('exist');\n  });`);
+            continue;
+          }
+          // getX
+          if (/^get[A-Z]/.test(name)) {
+            addTest(`  it('${name} should exist', () => {\n    pom.${name}().should('exist');\n  });`);
+            continue;
+          }
+          // waitXAt
+          if (/^wait.+At$/.test(name)) {
+            addTest(`  it('${name}(0) should resolve', () => {\n    pom.${name}(0, 8000);\n  });`);
+            continue;
+          }
+          // waitX
+          if (/^wait[A-Z]/.test(name)) {
+            addTest(`  it('${name} should resolve', () => {\n    pom.${name}(8000);\n  });`);
+            continue;
+          }
+          // clickXAt
+          const clickAt = name.match(/^click(.+)At$/);
+          if (clickAt) {
+            const base = clickAt[1];
+            addTest(`  it('can ${name}(0)', () => {\n    pom.wait${base}At?.(0, 8000);\n    pom.${name}(0);\n  });`);
+            continue;
+          }
+          // clickX
+          const click = name.match(/^click(.+)/);
+          if (click) {
+            const base = click[1];
+            addTest(`  it('can ${name}()', () => {\n    pom.wait${base}?.(8000);\n    pom.${name}();\n  });`);
+            continue;
+          }
+        }
+
         content += `});\n`;
         break;
+      }
     }
 
     return content;

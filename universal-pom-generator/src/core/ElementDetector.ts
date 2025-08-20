@@ -41,10 +41,74 @@ export class ElementDetector {
    */
   private async getAllElements(browser: any): Promise<any[]> {
     const elements = await browser.executeScript(`
+      function nearestHeadingText(el) {
+        let node = el;
+        while (node && node !== document) {
+          const heading = node.querySelector && node.querySelector('h1,h2,h3,h4,h5,h6');
+          if (heading && heading.textContent) return heading.textContent.trim();
+          if (node.getAttribute && node.getAttribute('aria-label')) return node.getAttribute('aria-label');
+          node = node.parentNode;
+        }
+        return '';
+      }
+      function findNearestStrongContainer(el) {
+        let node = el && el.parentElement;
+        while (node && node !== document) {
+          const dtid = node.getAttribute && (node.getAttribute('data-test-id') || node.getAttribute('data-testid'));
+          if (node.id) {
+            return { id: node.id, testid: '', selector: '#' + node.id };
+          }
+          if (dtid) {
+            return { id: '', testid: dtid, selector: '[data-test-id="' + dtid + '"]' };
+          }
+          node = node.parentElement;
+        }
+        return { id: '', testid: '', selector: '' };
+      }
+      function findNearestIframeSelector(el) {
+        let node = el && el.parentElement;
+        while (node && node !== document) {
+          if (node.tagName && node.tagName.toLowerCase() === 'iframe') {
+            const id = node.id || '';
+            const name = node.getAttribute('name') || '';
+            const dtid = node.getAttribute('data-test-id') || node.getAttribute('data-testid') || '';
+            if (id) return 'iframe#' + id;
+            if (dtid) return 'iframe[data-test-id="' + dtid + '"]';
+            if (name) return 'iframe[name="' + name + '"]';
+            const iframes = Array.from(node.parentElement?.querySelectorAll('iframe') || []);
+            const idx = iframes.indexOf(node);
+            if (idx >= 0) return 'iframe:nth-of-type(' + (idx + 1) + ')';
+            return 'iframe';
+          }
+          node = node.parentElement;
+        }
+        return '';
+      }
+      function labelTextFor(el) {
+        if (el.id) {
+          const lbl = document.querySelector('label[for="' + el.id + '"]');
+          if (lbl && lbl.textContent) return lbl.textContent.trim();
+        }
+        const p = el.closest && el.closest('label');
+        if (p && p.textContent) return p.textContent.trim();
+        const aria = el.getAttribute && el.getAttribute('aria-labelledby');
+        if (aria) {
+          const ref = document.getElementById(aria);
+          if (ref && ref.textContent) return ref.textContent.trim();
+        }
+        return '';
+      }
       return Array.from(document.querySelectorAll('*')).map(element => {
         const rect = element.getBoundingClientRect();
         const computedStyle = window.getComputedStyle(element);
-        
+        const attrs = Array.from(element.attributes).reduce((acc, attr) => { acc[attr.name] = attr.value; return acc; }, {});
+        const role = element.getAttribute('role') || '';
+        const ariaLabel = element.getAttribute('aria-label') || '';
+        const dataTestId = element.getAttribute('data-test-id') || element.getAttribute('data-testid') || '';
+        const lblText = labelTextFor(element);
+        const sectionText = nearestHeadingText(element);
+        const container = findNearestStrongContainer(element);
+        const iframeSel = findNearestIframeSelector(element);
         return {
           tagName: element.tagName.toLowerCase(),
           id: element.id || null,
@@ -58,16 +122,18 @@ export class ElementDetector {
           title: element.title || null,
           alt: element.alt || null,
           isVisible: rect.width > 0 && rect.height > 0 && computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden',
-          position: {
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height
-          },
-          attributes: Array.from(element.attributes).reduce((acc, attr) => {
-            acc[attr.name] = attr.value;
-            return acc;
-          }, {}),
+          position: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          attributes: Object.assign({}, attrs, {
+            'role': role,
+            'aria-label': ariaLabel,
+            'data-test-id': dataTestId,
+            'label-text': lblText,
+            'section-text': sectionText,
+            'nearest-container-id': container.id,
+            'nearest-container-testid': container.testid,
+            'nearest-container-selector': container.selector,
+            'nearest-iframe-selector': iframeSel
+          }),
           children: []
         };
       });
@@ -126,15 +192,16 @@ export class ElementDetector {
   /**
    * Enhance elements with additional information
    */
-  private async enhanceElements(elements: any[], browser: any): Promise<Element[]> {
+  private async enhanceElements(elements: any[], _browser: any): Promise<Element[]> {
     const enhancedElements: Element[] = [];
 
     for (const element of elements) {
+      const rawId: string | null = element.id;
+      const normalizedId: string | undefined = rawId && rawId !== 'null' && rawId !== 'undefined' ? rawId : undefined;
       const enhancedElement: Element = {
         id: this.generateElementId(element),
         tagName: element.tagName,
         className: element.className,
-        elementId: element.id,
         text: element.text,
         href: element.href,
         src: element.src,
@@ -143,14 +210,17 @@ export class ElementDetector {
         placeholder: element.placeholder,
         title: element.title,
         alt: element.alt,
-        xpath: await this.generateXPath(element, browser),
-        cssSelector: await this.generateCSSSelector(element, browser),
+        xpath: '',
+        cssSelector: '',
         isInteractive: this.isInteractive(element),
         isVisible: element.isVisible,
         children: [],
         attributes: element.attributes,
         position: element.position,
       };
+      if (normalizedId) {
+        (enhancedElement as any).elementId = normalizedId;
+      }
 
       enhancedElements.push(enhancedElement);
     }
@@ -163,15 +233,10 @@ export class ElementDetector {
    */
   private async generateSelectors(elements: Element[]): Promise<Element[]> {
     for (const element of elements) {
-      // Generate CSS selector
-      if (!element.cssSelector) {
-        element.cssSelector = this.generateUniqueCSSSelector(element);
-      }
-
-      // Generate XPath
-      if (!element.xpath) {
-        element.xpath = this.generateUniqueXPath(element);
-      }
+      // Generate preferred CSS selector
+      element.cssSelector = this.generatePreferredCSSSelector(element);
+      // Generate preferred XPath
+      element.xpath = this.generatePreferredXPath(element);
     }
 
     return elements;
@@ -180,132 +245,75 @@ export class ElementDetector {
   /**
    * Generate unique CSS selector for element
    */
-  private generateUniqueCSSSelector(element: Element): string {
-    let selector = element.tagName;
-
-    // Add ID if available
-    if (element.id) {
-      return `#${element.id}`;
-    }
-
-    // Add class if available
-    if (element.className) {
-      const classes = element.className.split(' ').filter(c => c.trim());
-      if (classes.length > 0) {
-        selector += `.${classes.join('.')}`;
+  private generatePreferredCSSSelector(element: Element): string {
+    // Prefer data-test-id
+    const dtid = element.attributes?.['data-test-id'] || element.attributes?.['data-testid'];
+    if (dtid) return `[data-test-id="${dtid}"]`;
+    // Try stable id; avoid volatile
+    const id = element.elementId;
+    if (id && id !== 'null' && id !== 'undefined') {
+      if (/^_?hj/i.test(id)) {
+        // volatile; skip
+      } else if (/\d{4,}$/.test(id)) {
+        const prefix = id.replace(/\d{4,}$/, '');
+        if (prefix) return `[id^="${prefix}"]`;
+      } else {
+        return `#${id}`;
       }
     }
-
-    // Add attributes for uniqueness
-    if (element.type) {
-      selector += `[type="${element.type}"]`;
+    // Container + classes
+    const containerSel = element.attributes?.['nearest-container-selector'];
+    if (containerSel && element.className) {
+      const classes = element.className.split(' ').filter(Boolean).map(c => `.${c}`).join('');
+      if (classes) return `${containerSel} ${classes}`;
     }
-
-    if (element.placeholder) {
-      selector += `[placeholder="${element.placeholder}"]`;
-    }
-
-    if (element.title) {
-      selector += `[title="${element.title}"]`;
-    }
-
+    // Fallback to tag + attribute hints
+    let selector = element.tagName;
+    if (element.type) selector += `[type="${element.type}"]`;
+    if (element.placeholder) selector += `[placeholder="${element.placeholder}"]`;
+    if (element.title) selector += `[title="${element.title}"]`;
     return selector;
   }
 
   /**
    * Generate unique XPath for element
    */
-  private generateUniqueXPath(element: Element): string {
-    let xpath = `//${element.tagName}`;
-
-    // Add ID if available
-    if (element.id) {
-      return `//${element.tagName}[@id="${element.id}"]`;
-    }
-
-    // Add class if available
-    if (element.className) {
-      const classes = element.className.split(' ').filter(c => c.trim());
-      if (classes.length > 0) {
-        xpath += `[contains(@class, "${classes[0]}")]`;
+  private generatePreferredXPath(element: Element): string {
+    const tag = element.tagName;
+    const dtid = element.attributes?.['data-test-id'] || element.attributes?.['data-testid'];
+    if (dtid) return `//${tag}[@data-test-id="${dtid}"]`;
+    const id = element.elementId;
+    if (id && id !== 'null' && id !== 'undefined') {
+      if (/^_?hj/i.test(id)) {
+        // volatile; skip exact id
+      } else if (/\d{4,}$/.test(id)) {
+        const prefix = id.replace(/\d{4,}$/, '');
+        if (prefix) return `//${tag}[starts-with(@id, "${prefix}")]`;
+      } else {
+        return `//${tag}[@id="${id}"]`;
       }
     }
-
-    // Add attributes for uniqueness
-    if (element.type) {
-      xpath += `[@type="${element.type}"]`;
+    // Container-aware
+    const containerSel = element.attributes?.['nearest-container-selector'];
+    if (containerSel) {
+      // Convert simple container selectors to XPath prefix, best-effort
+      if (containerSel.startsWith('#')) {
+        return `//*[@id="${containerSel.slice(1)}"]//${tag}`;
+      }
+      const m = containerSel.match(/\[data-test-id="([^"]+)"\]/);
+      if (m) {
+        return `//*[@data-test-id="${m[1]}"]//${tag}`;
+      }
     }
-
-    if (element.placeholder) {
-      xpath += `[@placeholder="${element.placeholder}"]`;
+    // Fallback using class contains
+    if (element.className) {
+      const first = element.className.split(' ').filter(Boolean)[0];
+      if (first) return `//${tag}[contains(@class, "${first}")]`;
     }
-
-    if (element.title) {
-      xpath += `[@title="${element.title}"]`;
-    }
-
-    return xpath;
+    return `//${tag}`;
   }
 
-  /**
-   * Generate XPath for element using browser
-   */
-  private async generateXPath(element: any, browser: any): Promise<string> {
-    try {
-      const xpath = await browser.executeScript(`
-        function getXPath(element) {
-          if (element.id !== '') {
-            return '//' + element.tagName.toLowerCase() + '[@id="' + element.id + '"]';
-          }
-          if (element === document.body) {
-            return element.tagName.toLowerCase();
-          }
-          let ix = 0;
-          let siblings = element.parentNode.childNodes;
-          for (let i = 0; i < siblings.length; i++) {
-            let sibling = siblings[i];
-            if (sibling === element) {
-              return getXPath(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';
-            }
-            if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-              ix++;
-            }
-          }
-        }
-        return getXPath(arguments[0]);
-      `, element);
-
-      return xpath;
-    } catch (error) {
-      this.logger.warn(`Failed to generate XPath: ${error}`);
-      return '';
-    }
-  }
-
-  /**
-   * Generate CSS selector for element using browser
-   */
-  private async generateCSSSelector(element: any, browser: any): Promise<string> {
-    try {
-      const cssSelector = await browser.executeScript(`
-        function getCSSSelector(element) {
-          if (element.id) {
-            return '#' + element.id;
-          }
-          if (element.className) {
-            return '.' + element.className.split(' ').join('.');
-          }
-          return element.tagName.toLowerCase();
-        }
-        return getCSSSelector(arguments[0]);
-      `, element);
-
-      return cssSelector;
-    } catch (error) {
-      this.logger.warn(`Failed to generate CSS selector: ${error}`);
-      return '';
-    }
-  }
+  // Deprecated legacy browser-assisted helpers removed
 
   /**
    * Check if element is interactive

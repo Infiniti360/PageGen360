@@ -1,308 +1,315 @@
-export class CypressPage {
-  constructor() {}
+/// <reference types="cypress" />
 
-  getRoot_hibalakrishnanba() {
-    return cy.get("#root_hibalakrishnanba");
+
+export class StagingmytocafootballcomHomePage {
+
+  visit() {
+    cy.visit('https://staging.my.tocafootball.com/home');
   }
 
-  waitRoot_hibalakrishnanba(timeout: number = 5000) {
-    cy.get("#root_hibalakrishnanba").should('be.visible');
+  getLeaderboard() {
+    return cy.get('#root .ml-4.flex.items-center.justify-center.text-base.text-white');
   }
 
-  getApp_hibalakrishnanba() {
-    return cy.get("#app_hibalakrishnanba");
+  waitLeaderboard(timeout = 5000) {
+    cy.get('#root .ml-4.flex.items-center.justify-center.text-base.text-white').should('be.visible');
   }
 
-  waitApp_hibalakrishnanba(timeout: number = 5000) {
-    cy.get("#app_hibalakrishnanba").should('be.visible');
+  getPlayerHomeContainer() {
+    return cy.get('[data-test-id="player-home-container"]');
   }
 
-  getPagecontainer_containerrevised__zvcsk_hibalakrishnanba() {
-    return cy.get("#pagecontainer_containerrevised__zvcsk_hibalakrishnanba");
+  waitPlayerHomeContainer(timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"]').should('be.visible');
   }
 
-  waitPagecontainer_containerrevised__zvcsk_hibalakrishnanba(timeout: number = 5000) {
-    cy.get("#pagecontainer_containerrevised__zvcsk_hibalakrishnanba").should('be.visible');
+  getPlayerCardContainer() {
+    return cy.get('[data-test-id="player-card-container"]');
   }
 
-  getMt-12_hibalakrishnanba() {
-    return cy.get("#mt-12_hibalakrishnanba");
+  waitPlayerCardContainer(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"]').should('be.visible');
   }
 
-  waitMt-12_hibalakrishnanba(timeout: number = 5000) {
-    cy.get("#mt-12_hibalakrishnanba").should('be.visible');
+  getLeaderboard2() {
+    return cy.get('[data-test-id="player-card-container"] .relative.h-full.w-full.rounded-lg.overflow-hidden');
   }
 
-  getMl-4_hibalakrishnan() {
-    return cy.get("#ml-4_hibalakrishnan");
+  waitLeaderboard2(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .relative.h-full.w-full.rounded-lg.overflow-hidden').should('be.visible');
   }
 
-  waitMl-4_hibalakrishnan(timeout: number = 5000) {
-    cy.get("#ml-4_hibalakrishnan").should('be.visible');
+  getLeaderboard3() {
+    return cy.get('[data-test-id="player-card-container"] .h-full.p-1');
   }
 
-  getMr-2_submit() {
-    return cy.get("#mr-2_submit");
+  waitLeaderboard3(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .h-full.p-1').should('be.visible');
   }
 
-  clickMr-2_submit() {
-    cy.get("#mr-2_submit").click();
+  getLeaderboard4() {
+    return cy.get('[data-test-id="player-card-container"] .relative.flex.h-full.w-full.flex-col.items-center.justify-between.rounded-lg.p-2');
   }
 
-  waitMr-2_submit(timeout: number = 5000) {
-    cy.get("#mr-2_submit").should('be.visible');
+  waitLeaderboard4(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .relative.flex.h-full.w-full.flex-col.items-center.justify-between.rounded-lg.p-2').should('be.visible');
   }
 
-  getFlex_bala3balakrishnanage() {
-    return cy.get("#flex_bala3balakrishnanage");
+  getLeaderboard5() {
+    return cy.get('[data-test-id="player-card-container"] .flex.w-full.justify-between');
   }
 
-  waitFlex_bala3balakrishnanage(timeout: number = 5000) {
-    cy.get("#flex_bala3balakrishnanage").should('be.visible');
+  waitLeaderboard5(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .flex.w-full.justify-between').should('be.visible');
   }
 
-  getAspect-[327/530]_bala3balakrishnanage() {
-    return cy.get("#aspect-[327/530]_bala3balakrishnanage");
+  getLeaderboard6() {
+    return cy.get('[data-test-id="player-card-container"] .flex.h-[72px].w-[72px].cursor-pointer.items-center.justify-center.rounded-full.bg-white');
   }
 
-  waitAspect-[327/530]_bala3balakrishnanage(timeout: number = 5000) {
-    cy.get("#aspect-[327/530]_bala3balakrishnanage").should('be.visible');
+  waitLeaderboard6(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .flex.h-[72px].w-[72px].cursor-pointer.items-center.justify-center.rounded-full.bg-white').should('be.visible');
   }
 
-  getRelative_bala3balakrishnanage() {
-    return cy.get("#relative_bala3balakrishnanage");
+  getLeaderboard7() {
+    return cy.get('[data-test-id="player-card-container"] .relative.flex.max-w-fit.justify-center');
   }
 
-  waitRelative_bala3balakrishnanage(timeout: number = 5000) {
-    cy.get("#relative_bala3balakrishnanage").should('be.visible');
+  waitLeaderboard7(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .relative.flex.max-w-fit.justify-center').should('be.visible');
   }
 
-  getH-full_bala3balakrishnanage() {
-    return cy.get("#h-full_bala3balakrishnanage");
+  getJerseyBackName() {
+    return cy.get('[data-test-id="jersey-back-name"]');
   }
 
-  waitH-full_bala3balakrishnanage(timeout: number = 5000) {
-    cy.get("#h-full_bala3balakrishnanage").should('be.visible');
+  waitJerseyBackName(timeout = 5000) {
+    cy.get('[data-test-id="jersey-back-name"]').should('be.visible');
   }
 
-  getRelative_bala3balakrishnanage() {
-    return cy.get("#relative_bala3balakrishnanage");
+  getJerseyBackNumber() {
+    return cy.get('[data-test-id="jersey-back-number"]');
   }
 
-  waitRelative_bala3balakrishnanage(timeout: number = 5000) {
-    cy.get("#relative_bala3balakrishnanage").should('be.visible');
+  waitJerseyBackNumber(timeout = 5000) {
+    cy.get('[data-test-id="jersey-back-number"]').should('be.visible');
   }
 
-  getFlex_bala3() {
-    return cy.get("#flex_bala3");
+  getLeaderboard8() {
+    return cy.get('[data-test-id="player-card-container"] .mt-9.flex.w-full.flex-col.items-center');
   }
 
-  waitFlex_bala3(timeout: number = 5000) {
-    cy.get("#flex_bala3").should('be.visible');
+  waitLeaderboard8(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .mt-9.flex.w-full.flex-col.items-center').should('be.visible');
   }
 
-  getFlex_bala3() {
-    return cy.get("#flex_bala3");
+  getLeaderboard9() {
+    return cy.get('[data-test-id="player-card-container"] .mt-10.flex.flex-col.items-center');
   }
 
-  waitFlex_bala3(timeout: number = 5000) {
-    cy.get("#flex_bala3").should('be.visible');
+  waitLeaderboard9(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .mt-10.flex.flex-col.items-center').should('be.visible');
   }
 
-  getRelative_bala3() {
-    return cy.get("#relative_bala3");
+  getPlayerCardFirstName() {
+    return cy.get('[data-test-id="player-card-first-name"]');
   }
 
-  waitRelative_bala3(timeout: number = 5000) {
-    cy.get("#relative_bala3").should('be.visible');
+  waitPlayerCardFirstName(timeout = 5000) {
+    cy.get('[data-test-id="player-card-first-name"]').should('be.visible');
   }
 
-  getAbsolute_bala() {
-    return cy.get("#absolute_bala");
+  getPlayerCardLastName() {
+    return cy.get('[data-test-id="player-card-last-name"]');
   }
 
-  waitAbsolute_bala(timeout: number = 5000) {
-    cy.get("#absolute_bala").should('be.visible');
+  waitPlayerCardLastName(timeout = 5000) {
+    cy.get('[data-test-id="player-card-last-name"]').should('be.visible');
   }
 
-  getAbsolute_3() {
-    return cy.get("#absolute_3");
+  getLeaderboard10() {
+    return cy.get('[data-test-id="player-card-container"] .flex.w-full.justify-between.text-center');
   }
 
-  waitAbsolute_3(timeout: number = 5000) {
-    cy.get("#absolute_3").should('be.visible');
+  waitLeaderboard10(timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .flex.w-full.justify-between.text-center').should('be.visible');
   }
 
-  getMt-9_balakrishnan() {
-    return cy.get("#mt-9_balakrishnan");
+  getAllLeaderboard11() {
+    return cy.get('[data-test-id="player-card-container"] .text-base.opacity-70');
   }
 
-  waitMt-9_balakrishnan(timeout: number = 5000) {
-    cy.get("#mt-9_balakrishnan").should('be.visible');
+  getLeaderboard11At(index) {
+    return cy.get('[data-test-id="player-card-container"] .text-base.opacity-70').eq(index);
   }
 
-  getMt-10_balakrishnan() {
-    return cy.get("#mt-10_balakrishnan");
+  waitLeaderboard11At(index, timeout = 5000) {
+    cy.get('[data-test-id="player-card-container"] .text-base.opacity-70').eq(index).should('be.visible');
   }
 
-  waitMt-10_balakrishnan(timeout: number = 5000) {
-    cy.get("#mt-10_balakrishnan").should('be.visible');
+  getPlayerCardAgeValue() {
+    return cy.get('[data-test-id="player-card-age-value"]');
   }
 
-  getWhitespace-nowrap_bala() {
-    return cy.get("#whitespace-nowrap_bala");
+  waitPlayerCardAgeValue(timeout = 5000) {
+    cy.get('[data-test-id="player-card-age-value"]').should('be.visible');
   }
 
-  waitWhitespace-nowrap_bala(timeout: number = 5000) {
-    cy.get("#whitespace-nowrap_bala").should('be.visible');
+  getPlayerCardRepsValue() {
+    return cy.get('[data-test-id="player-card-reps-value"]');
   }
 
-  getWhitespace-nowrap_krishnan() {
-    return cy.get("#whitespace-nowrap_krishnan");
+  waitPlayerCardRepsValue(timeout = 5000) {
+    cy.get('[data-test-id="player-card-reps-value"]').should('be.visible');
   }
 
-  waitWhitespace-nowrap_krishnan(timeout: number = 5000) {
-    cy.get("#whitespace-nowrap_krishnan").should('be.visible');
+  getLeaderboard12() {
+    return cy.get('[data-test-id="player-home-container"] .w-full');
   }
 
-  getFlex_age36reps0() {
-    return cy.get("#flex_age36reps0");
+  waitLeaderboard12(timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"] .w-full').should('be.visible');
   }
 
-  waitFlex_age36reps0(timeout: number = 5000) {
-    cy.get("#flex_age36reps0").should('be.visible');
+  getAllLeaderboardLink() {
+    return cy.get('[data-test-id="player-home-container"] .block.text-xl');
   }
 
-  getAge36() {
-    return cy.get("#age36");
+  getLeaderboardLinkAt(index) {
+    return cy.get('[data-test-id="player-home-container"] .block.text-xl').eq(index);
   }
 
-  waitAge36(timeout: number = 5000) {
-    cy.get("#age36").should('be.visible');
+  waitLeaderboardLinkAt(index, timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"] .block.text-xl').eq(index).should('be.visible');
   }
 
-  getText-base_age() {
-    return cy.get("#text-base_age");
+  clickLeaderboardLinkAt(index) {
+    cy.get('[data-test-id="player-home-container"] .block.text-xl').eq(index).click();
   }
 
-  waitText-base_age(timeout: number = 5000) {
-    cy.get("#text-base_age").should('be.visible');
+  getAllLeaderboard13() {
+    return cy.get('[data-test-id="player-home-container"] .mb-4.flex.items-center');
   }
 
-  getFont-teko_36() {
-    return cy.get("#font-teko_36");
+  getLeaderboard13At(index) {
+    return cy.get('[data-test-id="player-home-container"] .mb-4.flex.items-center').eq(index);
   }
 
-  waitFont-teko_36(timeout: number = 5000) {
-    cy.get("#font-teko_36").should('be.visible');
+  waitLeaderboard13At(index, timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"] .mb-4.flex.items-center').eq(index).should('be.visible');
   }
 
-  getReps0() {
-    return cy.get("#reps0");
+  getAllLeaderboard14() {
+    return cy.get('[data-test-id="player-home-container"] .text-xl.font-semibold');
   }
 
-  waitReps0(timeout: number = 5000) {
-    cy.get("#reps0").should('be.visible');
+  getLeaderboard14At(index) {
+    return cy.get('[data-test-id="player-home-container"] .text-xl.font-semibold').eq(index);
   }
 
-  getText-base_reps() {
-    return cy.get("#text-base_reps");
+  waitLeaderboard14At(index, timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"] .text-xl.font-semibold').eq(index).should('be.visible');
   }
 
-  waitText-base_reps(timeout: number = 5000) {
-    cy.get("#text-base_reps").should('be.visible');
+  getAllLeaderboard15() {
+    return cy.get('[data-test-id="player-home-container"] .mt-4.min-h-20.rounded-lg.bg-mls-grey.p-6.text-center.text-base');
   }
 
-  getFont-teko_0() {
-    return cy.get("#font-teko_0");
+  getLeaderboard15At(index) {
+    return cy.get('[data-test-id="player-home-container"] .mt-4.min-h-20.rounded-lg.bg-mls-grey.p-6.text-center.text-base').eq(index);
   }
 
-  waitFont-teko_0(timeout: number = 5000) {
-    cy.get("#font-teko_0").should('be.visible');
+  waitLeaderboard15At(index, timeout = 5000) {
+    cy.get('[data-test-id="player-home-container"] .mt-4.min-h-20.rounded-lg.bg-mls-grey.p-6.text-center.text-base').eq(index).should('be.visible');
   }
 
-  getW-full_leaderboard() {
-    return cy.get("#w-full_leaderboard");
+  getUpcomingSessionContainer() {
+    return cy.get('[data-test-id="upcoming-session-container"]');
   }
 
-  waitW-full_leaderboard(timeout: number = 5000) {
-    cy.get("#w-full_leaderboard").should('be.visible');
+  waitUpcomingSessionContainer(timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-container"]').should('be.visible');
   }
 
-  getBlock_leaderboard() {
-    return cy.get("#block_leaderboard");
+  getUpcoming() {
+    return cy.get('[data-test-id="upcoming-session-container"] .pb-6.text-lg.font-medium');
   }
 
-  clickBlock_leaderboard() {
-    cy.get("#block_leaderboard").click();
+  waitUpcoming(timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-container"] .pb-6.text-lg.font-medium').should('be.visible');
   }
 
-  waitBlock_leaderboard(timeout: number = 5000) {
-    cy.get("#block_leaderboard").should('be.visible');
+  getAllUpcomingSessionBlank() {
+    return cy.get('[data-test-id="upcoming-session-blank"]');
   }
 
-  getMb-4_leaderboard() {
-    return cy.get("#mb-4_leaderboard");
+  getUpcomingSessionBlankAt(index) {
+    return cy.get('[data-test-id="upcoming-session-blank"]').eq(index);
   }
 
-  waitMb-4_leaderboard(timeout: number = 5000) {
-    cy.get("#mb-4_leaderboard").should('be.visible');
+  waitUpcomingSessionBlankAt(index, timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-blank"]').eq(index).should('be.visible');
   }
 
-  getText-xl_leaderboard() {
-    return cy.get("#text-xl_leaderboard");
+  getAllOhNoNoSessionBooked() {
+    return cy.get('[data-test-id="upcoming-session-blank"] .flex.h-16.w-16.flex-shrink-0.items-center.justify-center.rounded-full.bg-mls-primary.text-white');
   }
 
-  waitText-xl_leaderboard(timeout: number = 5000) {
-    cy.get("#text-xl_leaderboard").should('be.visible');
+  getOhNoNoSessionBookedAt(index) {
+    return cy.get('[data-test-id="upcoming-session-blank"] .flex.h-16.w-16.flex-shrink-0.items-center.justify-center.rounded-full.bg-mls-primary.text-white').eq(index);
   }
 
-  getW-full_mysessions() {
-    return cy.get("#w-full_mysessions");
+  waitOhNoNoSessionBookedAt(index, timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-blank"] .flex.h-16.w-16.flex-shrink-0.items-center.justify-center.rounded-full.bg-mls-primary.text-white').eq(index).should('be.visible');
   }
 
-  waitW-full_mysessions(timeout: number = 5000) {
-    cy.get("#w-full_mysessions").should('be.visible');
+  getAllSessionTime() {
+    return cy.get('[data-test-id="session-time"]');
   }
 
-  getBlock_mysessions() {
-    return cy.get("#block_mysessions");
+  getSessionTimeAt(index) {
+    return cy.get('[data-test-id="session-time"]').eq(index);
   }
 
-  clickBlock_mysessions() {
-    cy.get("#block_mysessions").click();
+  waitSessionTimeAt(index, timeout = 5000) {
+    cy.get('[data-test-id="session-time"]').eq(index).should('be.visible');
   }
 
-  waitBlock_mysessions(timeout: number = 5000) {
-    cy.get("#block_mysessions").should('be.visible');
+  getAllOhNoNoSessionBooked2() {
+    return cy.get('[data-test-id="upcoming-session-blank"] .space-y-1');
   }
 
-  getMb-4_mysessions() {
-    return cy.get("#mb-4_mysessions");
+  getOhNoNoSessionBooked2At(index) {
+    return cy.get('[data-test-id="upcoming-session-blank"] .space-y-1').eq(index);
   }
 
-  waitMb-4_mysessions(timeout: number = 5000) {
-    cy.get("#mb-4_mysessions").should('be.visible');
+  waitOhNoNoSessionBooked2At(index, timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-blank"] .space-y-1').eq(index).should('be.visible');
   }
 
-  getText-xl_mysessions() {
-    return cy.get("#text-xl_mysessions");
+  getAllOhNoNoSessionBooked3() {
+    return cy.get('[data-test-id="upcoming-session-blank"] .text-base.font-medium');
   }
 
-  waitText-xl_mysessions(timeout: number = 5000) {
-    cy.get("#text-xl_mysessions").should('be.visible');
+  getOhNoNoSessionBooked3At(index) {
+    return cy.get('[data-test-id="upcoming-session-blank"] .text-base.font-medium').eq(index);
   }
 
-  waitForPageLoad() {
-    cy.wait(1000);
+  waitOhNoNoSessionBooked3At(index, timeout = 5000) {
+    cy.get('[data-test-id="upcoming-session-blank"] .text-base.font-medium').eq(index).should('be.visible');
   }
 
-  getPageTitle() {
-    return cy.title();
+  getAllSessionType() {
+    return cy.get('[data-test-id="session-type"]');
   }
 
-  takeScreenshot(filename: string) {
-    cy.screenshot(filename || 'screenshot');
+  getSessionTypeAt(index) {
+    return cy.get('[data-test-id="session-type"]').eq(index);
   }
+
+  waitSessionTypeAt(index, timeout = 5000) {
+    cy.get('[data-test-id="session-type"]').eq(index).should('be.visible');
+  }
+
 
 }

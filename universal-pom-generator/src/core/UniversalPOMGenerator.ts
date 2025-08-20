@@ -10,7 +10,7 @@ import {
 } from '../types';
 import { ElementDetector } from './ElementDetector';
 import { POMMethodGenerator } from './POMMethodGenerator';
-import { CodeGenerator } from './CodeGenerator';
+// import { CodeGenerator } from './CodeGenerator';
 import { AuthenticationHandler } from '../auth/AuthenticationHandler';
 import { VersionManager } from '../version/VersionManager';
 import { BrowserManager } from '../browser/BrowserManager';
@@ -22,7 +22,7 @@ import { Logger } from '../utils/Logger';
 export class UniversalPOMGenerator {
   private elementDetector: ElementDetector;
   private methodGenerator: POMMethodGenerator;
-  private codeGenerator: CodeGenerator;
+  // private codeGenerator: CodeGenerator; // not used in MCP-style fallback
   private authHandler: AuthenticationHandler;
   private versionManager: VersionManager;
   private browserManager: BrowserManager;
@@ -38,7 +38,7 @@ export class UniversalPOMGenerator {
     this.logger = new Logger(options?.logLevel || 'info');
     this.elementDetector = new ElementDetector();
     this.methodGenerator = new POMMethodGenerator();
-    this.codeGenerator = new CodeGenerator();
+    // this.codeGenerator = new CodeGenerator();
     this.authHandler = new AuthenticationHandler();
     this.versionManager = new VersionManager();
     this.browserManager = new BrowserManager();
@@ -100,6 +100,15 @@ export class UniversalPOMGenerator {
           this.logger.debug(`Navigating to target page: ${url}`);
           await this.browserManager.navigateToPage(url, browser);
           this.logger.debug('Navigation to target page completed');
+          // Always ensure page is fully loaded
+          try { await this.browserManager['waitForNetworkIdle']?.(browser); } catch {}
+          try { await this.browserManager['waitForDOMStable']?.(browser); } catch {}
+          // Enforce that we are at the intended path
+          try {
+            const targetPath = new URL(url).pathname || '/';
+            const ok = await this.browserManager.waitForPathIs(browser, targetPath, 20000);
+            this.logger.debug(`Path check to ${targetPath}: ${ok}`);
+          } catch {}
         } else {
           this.logger.debug('No login URL provided, using fallback approach');
           // Fallback: try to navigate to target URL and handle any redirects
@@ -116,6 +125,13 @@ export class UniversalPOMGenerator {
             // After login, navigate to the target URL again
             await this.browserManager.navigateToPage(url, browser);
             this.logger.debug('Navigation to target page after login completed');
+            try { await this.browserManager['waitForNetworkIdle']?.(browser); } catch {}
+            try { await this.browserManager['waitForDOMStable']?.(browser); } catch {}
+            try {
+              const targetPath = new URL(url).pathname || '/';
+              const ok = await this.browserManager.waitForPathIs(browser, targetPath, 20000);
+              this.logger.debug(`Path check to ${targetPath}: ${ok}`);
+            } catch {}
           }
         }
       } else {
@@ -124,41 +140,58 @@ export class UniversalPOMGenerator {
         this.logger.debug('Page navigation completed');
       }
 
-      // Detect elements
-      const elements = await this.elementDetector.detectElements(browser);
+      // Detect elements (retry for transient driver issues)
+      let elements = [] as any[];
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          elements = await this.elementDetector.detectElements(browser);
+          break;
+        } catch (e) {
+          this.logger.warn(`Element detection attempt ${attempt} failed: ${e}`);
+          if (attempt === 3) throw e;
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+        }
+      }
       this.logger.debug(`Detected ${elements.length} elements`);
 
-      // Generate methods
-      const methods = await this.methodGenerator.generateMethods(elements, validatedOptions as any);
-      this.logger.debug(`Generated ${methods.length} methods`);
-
-      // Generate code
-      const code = await this.codeGenerator.generateCode(elements, methods, validatedOptions as any);
-      this.logger.debug('Code generation completed');
-
-      // Create POM object
-      const pom: POM = {
-        id: uuidv4(),
-        url,
-        version: '1.0.0',
-        framework: validatedOptions.framework,
-        language: validatedOptions.language,
-        elements,
-        methods,
-        imports: code.imports,
-        className: this.generateClassName(url),
-        generatedCode: code.code, // Include the generated code
-        generatedAt: new Date(),
-        metadata: {
-          pageTitle: await this.browserManager.getPageTitle(browser),
-          loginRequired: !!validatedOptions.loginConfig,
-          authenticationMethod: validatedOptions.loginConfig?.type || undefined,
-          browser: validatedOptions.browser?.name || 'chrome',
-          userAgent: await this.browserManager.getUserAgent(browser),
-          viewport: validatedOptions.browser?.viewport || { width: 1920, height: 1080 },
-          timestamp: new Date(),
-        } as any,
-      };
+      // Generate code via MCP-style universal pattern (even without MCP) to mirror mytoca__profiles
+      let pom: POM;
+      if ((validatedOptions.mcpIntegration as any)?.aiConfig) {
+        const mcpPom = await this.mcpManager.generatePOMWithAI(elements, validatedOptions as any, {
+          title: await this.browserManager.getPageTitle(browser),
+          url,
+          description: await this.browserManager.getPageDescription(browser),
+        });
+        pom = mcpPom;
+      } else {
+        const mcpLike = await this.mcpManager.generatePOMWithAI(elements, validatedOptions as any, {
+          title: await this.browserManager.getPageTitle(browser),
+          url,
+          description: await this.browserManager.getPageDescription(browser),
+        });
+        pom = {
+          id: uuidv4(),
+          url,
+          version: '1.0.0',
+          framework: validatedOptions.framework,
+          language: validatedOptions.language,
+          elements,
+          methods: mcpLike.methods,
+          imports: mcpLike.imports,
+          className: this.generateClassName(url),
+          generatedCode: mcpLike.generatedCode || '',
+          generatedAt: new Date(),
+          metadata: {
+            pageTitle: await this.browserManager.getPageTitle(browser),
+            loginRequired: !!validatedOptions.loginConfig,
+            authenticationMethod: validatedOptions.loginConfig?.type || undefined,
+            browser: validatedOptions.browser?.name || 'chrome',
+            userAgent: await this.browserManager.getUserAgent(browser),
+            viewport: validatedOptions.browser?.viewport || { width: 1920, height: 1080 },
+            timestamp: new Date(),
+          } as any,
+        };
+      }
 
       // Apply AI enhancements if LLM is configured
       if (validatedOptions.llmIntegration) {
@@ -178,7 +211,7 @@ export class UniversalPOMGenerator {
       const metadata: ResultMetadata = {
         generationTime,
         elementCount: elements.length,
-        methodCount: methods.length,
+        methodCount: pom.methods.length,
         framework: validatedOptions.framework,
         language: validatedOptions.language,
         browser: validatedOptions.browser?.name || 'chrome',

@@ -114,6 +114,7 @@ export class AuthenticationHandler {
     const loginPageUrl = loginUrl || url;
     this.logger.debug(`Navigating to login page: ${loginPageUrl}`);
     await browser.get(loginPageUrl);
+    await new Promise(r => setTimeout(r, 500));
 
     // Wait for page to load completely
     await browser.executeScript(`
@@ -121,13 +122,13 @@ export class AuthenticationHandler {
         if (document.readyState === 'complete') {
           resolve();
         } else {
-          window.addEventListener('load', resolve);
+          window.addEventListener('load', resolve, { once: true });
         }
       });
     `);
     
     // Additional wait for dynamic content and JavaScript execution
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Check if we're actually on a login page
     const currentUrl = await browser.getCurrentUrl();
@@ -143,6 +144,7 @@ export class AuthenticationHandler {
       if (currentUrl !== loginUrl) {
         this.logger.debug(`Navigating to login URL: ${loginUrl}`);
         await browser.get(loginUrl);
+        await new Promise(r => setTimeout(r, 500));
         
         // Wait for the login page to load completely
         await browser.executeScript(`
@@ -150,7 +152,7 @@ export class AuthenticationHandler {
             if (document.readyState === 'complete') {
               resolve();
             } else {
-              window.addEventListener('load', resolve);
+              window.addEventListener('load', resolve, { once: true });
             }
           });
         `);
@@ -267,6 +269,7 @@ export class AuthenticationHandler {
     }
     
     await submitButton.click();
+    await new Promise(r => setTimeout(r, 1200));
 
     // Wait for login to complete with better error handling
     if (waitForLogin) {
