@@ -2,10 +2,40 @@ import { LoginConfig } from '../types';
 import { Logger } from '../utils/Logger';
 
 // Import Selenium WebDriver components
-const { By, until } = require('selenium-webdriver');
+const { By, until, Key } = require('selenium-webdriver');
 
 export class AuthenticationHandler {
   private logger: Logger;
+  
+  // Helper: find first matching element by CSS across top-level and iframes
+  private async findElementAny(browser: any, selectors: string[]): Promise<any | null> {
+    // Top-level search
+    for (const css of selectors.filter(Boolean)) {
+      try {
+        const el = await browser.findElement(By.css(css));
+        if (el) return el;
+      } catch {}
+    }
+    // Search within iframes
+    try {
+      const frames = await browser.findElements(By.css('iframe'));
+      for (const frame of frames) {
+        try {
+          await browser.switchTo().frame(frame);
+          let found: any = null;
+          for (const css of selectors.filter(Boolean)) {
+            try {
+              const el = await browser.findElement(By.css(css));
+              if (el) { found = el; break; }
+            } catch {}
+          }
+          if (found) return found; // remain in frame context for subsequent actions
+        } catch {}
+        try { await browser.switchTo().defaultContent(); } catch {}
+      }
+    } catch {}
+    return null;
+  }
 
   constructor() {
     this.logger = new Logger();
@@ -167,33 +197,22 @@ export class AuthenticationHandler {
     // More robust username field detection
     const usernameSelectors = [
       selectors?.usernameField,
-      'input[name="email"][type="email"]',
+      'input[placeholder*="Email" i]',
+      'input[placeholder*="email" i]',
       'input[type="email"]',
-      'input[name="email"]',
+      'input[name="email" i]',
       'input[type="text"]',
-      'input[id*="email"]',
-      'input[id*="username"]',
-      'input[placeholder*="email"]',
-      'input[placeholder*="Email"]',
-      'input[placeholder*="Username"]',
-      'input[name="username"]',
-      'input[id="email"]',
-      'input[id="username"]'
+      'input[id*="email" i]',
+      'input[id*="username" i]',
+      'input[placeholder*="Username" i]',
+      'input[name="username" i]',
+      'input[id="email" i]',
+      'input[id="username" i]'
     ].filter(Boolean);
     
     this.logger.debug(`Available username selectors: ${usernameSelectors.join(', ')}`);
     
-    let usernameField = null;
-    for (const selector of usernameSelectors) {
-      try {
-        this.logger.debug(`Trying username selector: ${selector}`);
-        usernameField = await browser.findElement(By.css(selector));
-        this.logger.debug(`Found username field with selector: ${selector}`);
-        break;
-      } catch (error) {
-        this.logger.debug(`Username selector failed: ${selector}`);
-      }
-    }
+    let usernameField = await this.findElementAny(browser, usernameSelectors as string[]);
     
     if (!usernameField) {
       // Try to get page source for debugging
@@ -208,26 +227,14 @@ export class AuthenticationHandler {
     // More robust password field detection
     const passwordSelectors = [
       selectors?.passwordField,
-      'input[name="password"][type="password"]',
+      'input[placeholder*="Password" i]',
       'input[type="password"]',
-      'input[name="password"]',
-      'input[id*="password"]',
-      'input[placeholder*="password"]',
-      'input[placeholder*="Password"]',
-      'input[id="password"]'
+      'input[name="password" i]',
+      'input[id*="password" i]',
+      'input[id="password" i]'
     ].filter(Boolean);
     
-    let passwordField = null;
-    for (const selector of passwordSelectors) {
-      try {
-        this.logger.debug(`Trying password selector: ${selector}`);
-        passwordField = await browser.findElement(By.css(selector));
-        this.logger.debug(`Found password field with selector: ${selector}`);
-        break;
-      } catch (error) {
-        this.logger.debug(`Password selector failed: ${selector}`);
-      }
-    }
+    let passwordField = await this.findElementAny(browser, passwordSelectors as string[]);
     
     if (!passwordField) {
       throw new Error('Could not find password field on login page');
@@ -236,40 +243,114 @@ export class AuthenticationHandler {
     await passwordField.clear();
     await passwordField.sendKeys(password);
 
-    // More robust submit button detection
-    const submitSelectors = [
+    // More robust submit button detection (multi-strategy)
+    const synonyms = [
+      'sign in','signin','log in','login','submit','continue','next','authorize','enter','start','proceed'
+    ];
+    const submitCssCandidates = [
       selectors?.submitButton,
       'button[type="submit"]',
       'input[type="submit"]',
-      'button:contains("Sign In")',
-      'button:contains("Login")',
-      'button:contains("Submit")',
-      'input[value*="Sign"]',
-      'input[value*="Login"]',
-      'input[value*="Submit"]',
-      'button[class*="submit"]',
-      'button[class*="login"]',
-      'button[class*="sign"]'
-    ].filter(Boolean);
-    
-    let submitButton = null;
-    for (const selector of submitSelectors) {
-      try {
-        this.logger.debug(`Trying submit selector: ${selector}`);
-        submitButton = await browser.findElement(By.css(selector));
-        this.logger.debug(`Found submit button with selector: ${selector}`);
-        break;
-      } catch (error) {
-        this.logger.debug(`Submit selector failed: ${selector}`);
+      'button[role="button"], [role="button"]',
+      'button',
+      'input[type="button"]',
+      '[data-testid*="login" i]',
+      '[data-test-id*="login" i]',
+      '[data-testid*="sign" i]',
+      '[data-test-id*="sign" i]',
+      '[id*="login" i]',
+      '[class*="login" i]',
+      '[id*="submit" i]',
+      '[class*="submit" i]'
+    ].filter(Boolean) as string[];
+
+    let submitButton: any = null;
+
+    // Strategy A: CSS candidates + text/aria/value match
+    try {
+      for (const css of submitCssCandidates) {
+        try {
+          const candidates = await browser.findElements(By.css(css));
+          for (const el of candidates) {
+            try {
+              const txt = ((await el.getText()) || '').toLowerCase();
+              const aria = ((await el.getAttribute('aria-label')) || '').toLowerCase();
+              const val = ((await el.getAttribute('value')) || '').toLowerCase();
+              if (synonyms.some(s => txt.includes(s) || aria.includes(s) || val.includes(s))) {
+                submitButton = el; break;
+              }
+              // If type=submit and visible, accept
+              const typeAttr = (await el.getAttribute('type')) || '';
+              if (typeAttr.toLowerCase() === 'submit') { submitButton = el; break; }
+            } catch {}
+          }
+          if (submitButton) break;
+        } catch {}
+      }
+    } catch {}
+
+    // Strategy B: XPath text match
+    if (!submitButton) {
+      const xparts = [
+        "//button[@type='submit']",
+        "//input[@type='submit']",
+        ...synonyms.map(s => `//button[contains(translate(normalize-space(string(.)),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'${s}')]`),
+        ...synonyms.map(s => `//input[contains(translate(@value,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'${s}')]`),
+      ];
+      for (const xp of xparts) {
+        try {
+          const els = await browser.findElements(By.xpath(xp));
+          if (els && els.length) { submitButton = els[0]; break; }
+        } catch {}
       }
     }
-    
+
+    // Strategy C: JS scorer
     if (!submitButton) {
-      throw new Error('Could not find submit button on login page');
+      try {
+        submitButton = await browser.executeScript(`
+          const syns = ${JSON.stringify(synonyms)};
+          function score(el){
+            const t = (el.innerText||'').toLowerCase();
+            const a = (el.getAttribute('aria-label')||'').toLowerCase();
+            const v = (el.value||'').toLowerCase();
+            const type = (el.getAttribute('type')||'').toLowerCase();
+            let s = 0;
+            if (type==='submit') s+=5;
+            for (const k of syns){ if (t.includes(k)||a.includes(k)||v.includes(k)) s+=3; }
+            const idc=(el.id||'').toLowerCase(); const cls=(el.className||'').toLowerCase();
+            for (const k of ['login','signin','submit']){ if(idc.includes(k)||cls.includes(k)) s+=2; }
+            return s;
+          }
+          const all = Array.from(document.querySelectorAll('button,input,[role="button"]'));
+          let best=null,bs=-1; for(const el of all){ const sc=score(el); if(sc>bs){ bs=sc; best=el; } }
+          return best;
+        `);
+      } catch {}
     }
-    
-    await submitButton.click();
-    await new Promise(r => setTimeout(r, 1200));
+
+    // Strategy D: Enter on password field
+    if (!submitButton) {
+      this.logger.debug('Submit not found; attempting Enter key on password field');
+      try { await passwordField.sendKeys(Key.ENTER); } catch {}
+      // Fallback: submit nearest form
+      try {
+        await browser.executeScript(`(function(){ const f = (document.activeElement && document.activeElement.form) || document.querySelector('form'); if (f) f.submit(); })();`);
+      } catch {}
+      // Fallback: click first visible button
+      try {
+        const btns = await browser.findElements(By.css('button, input[type="submit"], [role="button"]'));
+        if (btns && btns.length) {
+          try { await btns[0].click(); } catch { try { await browser.executeScript('arguments[0].click();', btns[0]); } catch {} }
+        }
+      } catch {}
+    } else {
+      try { await submitButton.click(); }
+      catch { try { await browser.executeScript('arguments[0].click();', submitButton); } catch {} }
+    }
+    // Wait a bit and log current URL
+    await new Promise(r => setTimeout(r, 1500));
+    try { const after = await browser.getCurrentUrl(); this.logger.debug(`After submit, current URL: ${after}`); } catch {}
 
     // Wait for login to complete with better error handling
     if (waitForLogin) {

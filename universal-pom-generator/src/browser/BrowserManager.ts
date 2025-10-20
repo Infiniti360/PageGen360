@@ -55,13 +55,32 @@ export class BrowserManager {
 
     try {
       await browser.get(url);
+      try {
+        const cur = await browser.getCurrentUrl();
+        this.logger.debug(`After get(url), current URL: ${cur}`);
+      } catch {}
       await this.waitForPageLoad(browser);
       await this.waitForNetworkIdle(browser);
       await this.waitForDOMStable(browser);
-      this.logger.debug('Page navigation completed');
+      try {
+        const cur2 = await browser.getCurrentUrl();
+        this.logger.debug(`Page navigation completed at: ${cur2}`);
+      } catch {
+        this.logger.debug('Page navigation completed');
+      }
     } catch (error) {
       this.logger.error(`Page navigation failed: ${error}`);
       throw error;
+    }
+  }
+
+  /** Quick sanity check if session is alive */
+  async isSessionValid(browser: any): Promise<boolean> {
+    try {
+      await browser.getTitle();
+      return true;
+    } catch (e: any) {
+      return false;
     }
   }
 
@@ -365,6 +384,47 @@ export class BrowserManager {
       } catch {}
       await new Promise(r => setTimeout(r, 250));
     }
+    return false;
+  }
+
+  /**
+   * Ensure we are on the exact target URL (host + path), with retries and stability waits
+   */
+  async ensureOnTargetPage(browser: any, targetUrl: string, timeoutMs: number = 30000): Promise<boolean> {
+    this.logger.debug(`ensureOnTargetPage: waiting for ${targetUrl}`);
+    const start = Date.now();
+    const expected = new URL(targetUrl);
+    const expectedHost = expected.host;
+    const expectedPath = expected.pathname || '/';
+
+    let attemptedNavigate = false;
+
+    while (Date.now() - start < timeoutMs) {
+      try {
+        const current = await browser.getCurrentUrl();
+        const u = new URL(current);
+        // If still on auth/login pages, keep waiting and try to navigate once
+        const onAuth = /auth|login|signin|sign-in/i.test(u.pathname) || /auth|login|signin/i.test(current);
+        const hostMatches = u.host === expectedHost;
+        const pathMatches = u.pathname === expectedPath || (expectedPath === '/' && (u.pathname === '/' || u.pathname === ''));
+        this.logger.debug(`ensureOnTargetPage: current=${current} hostMatch=${hostMatches} pathMatch=${pathMatches} onAuth=${onAuth}`);
+        if (hostMatches && pathMatches) {
+          await this.waitForNetworkIdle(browser);
+          await this.waitForDOMStable(browser);
+          this.logger.debug('ensureOnTargetPage: reached target and stabilized');
+          return true;
+        }
+
+        if (onAuth && !attemptedNavigate) {
+          // Try to navigate directly to target URL once post-login
+          attemptedNavigate = true;
+          this.logger.debug('ensureOnTargetPage: on auth page, attempting direct navigate to target once');
+          try { await browser.get(targetUrl); } catch (e) { this.logger.debug(`ensureOnTargetPage direct navigate failed: ${e}`); }
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 500));
+    }
+    this.logger.debug('ensureOnTargetPage: timeout waiting for target');
     return false;
   }
 } 

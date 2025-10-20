@@ -61,7 +61,7 @@ export class UniversalPOMGenerator {
       this.logger.debug('Options validated successfully');
 
       // Initialize browser
-      const browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
+      let browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
       this.logger.debug('Browser initialized');
 
       // Initialize MCP if configured
@@ -87,31 +87,41 @@ export class UniversalPOMGenerator {
         
         if (loginConfig.loginUrl) {
           this.logger.debug(`Using direct login URL approach: ${loginConfig.loginUrl}`);
+          if (!(await this.browserManager.isSessionValid(browser))) {
+            this.logger.warn('Browser session invalid before login navigation; reinitializing');
+            browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
+          }
           await this.browserManager.navigateToPage(loginConfig.loginUrl, browser);
           
           // Wait for login page to load completely
           await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Handle login on the login page
-          await this.authHandler.handleLogin(loginConfig.loginUrl, loginConfig, browser);
+          try {
+            await this.authHandler.handleLogin(loginConfig.loginUrl, loginConfig, browser);
+          } catch (e) {
+            this.logger.warn(`Login attempt failed with error: ${e}. Checking session and retrying once.`);
+            if (!(await this.browserManager.isSessionValid(browser))) {
+              browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
+              await this.browserManager.navigateToPage(loginConfig.loginUrl, browser);
+            }
+            await this.authHandler.handleLogin(loginConfig.loginUrl, loginConfig, browser);
+          }
           this.logger.debug('Authentication completed successfully');
           
-          // After successful login, navigate to the target page
-          this.logger.debug(`Navigating to target page: ${url}`);
-          await this.browserManager.navigateToPage(url, browser);
-          this.logger.debug('Navigation to target page completed');
-          // Always ensure page is fully loaded
-          try { await this.browserManager['waitForNetworkIdle']?.(browser); } catch {}
-          try { await this.browserManager['waitForDOMStable']?.(browser); } catch {}
-          // Enforce that we are at the intended path
-          try {
-            const targetPath = new URL(url).pathname || '/';
-            const ok = await this.browserManager.waitForPathIs(browser, targetPath, 20000);
-            this.logger.debug(`Path check to ${targetPath}: ${ok}`);
-          } catch {}
+          // After successful login, navigate explicitly to target then ensure landing is ready
+          this.logger.debug(`Post-login: navigating explicitly to target: ${url}`);
+          try { await browser.get(url); } catch (e) { this.logger.warn(`Post-login navigate failed: ${e}`); }
+          this.logger.debug(`Ensuring we are on target page: ${url}`);
+          const ok = await this.browserManager.ensureOnTargetPage(browser, url, 40000);
+          this.logger.debug(`ensureOnTargetPage (post direct-login) -> ${ok}`);
         } else {
           this.logger.debug('No login URL provided, using fallback approach');
           // Fallback: try to navigate to target URL and handle any redirects
+          if (!(await this.browserManager.isSessionValid(browser))) {
+            this.logger.warn('Browser session invalid before initial target navigation; reinitializing');
+            browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
+          }
           await this.browserManager.navigateToPage(url, browser);
           this.logger.debug('Initial navigation to target page completed');
           
@@ -119,30 +129,38 @@ export class UniversalPOMGenerator {
           const currentUrl = await browser.getCurrentUrl();
           if (currentUrl.includes('auth')) {
             this.logger.debug('Detected redirect to auth page, handling login');
-            await this.authHandler.handleLogin(url, validatedOptions.loginConfig as any, browser);
+            try {
+              await this.authHandler.handleLogin(url, validatedOptions.loginConfig as any, browser);
+            } catch (e) {
+              this.logger.warn(`Login (redirect) failed with error: ${e}. Checking session and retrying once.`);
+              if (!(await this.browserManager.isSessionValid(browser))) {
+                browser = await this.browserManager.initializeBrowser(validatedOptions.browser as any);
+                await this.browserManager.navigateToPage(url, browser);
+              }
+              await this.authHandler.handleLogin(url, validatedOptions.loginConfig as any, browser);
+            }
             this.logger.debug('Authentication handled successfully');
             
-            // After login, navigate to the target URL again
-            await this.browserManager.navigateToPage(url, browser);
-            this.logger.debug('Navigation to target page after login completed');
-            try { await this.browserManager['waitForNetworkIdle']?.(browser); } catch {}
-            try { await this.browserManager['waitForDOMStable']?.(browser); } catch {}
-            try {
-              const targetPath = new URL(url).pathname || '/';
-              const ok = await this.browserManager.waitForPathIs(browser, targetPath, 20000);
-              this.logger.debug(`Path check to ${targetPath}: ${ok}`);
-            } catch {}
+            // After login, navigate explicitly to target then ensure landing is ready
+            this.logger.debug(`Post-login (redirect): navigating explicitly to target: ${url}`);
+            try { await browser.get(url); } catch (e) { this.logger.warn(`Post-login navigate failed: ${e}`); }
+            const ok = await this.browserManager.ensureOnTargetPage(browser, url, 40000);
+            this.logger.debug(`ensureOnTargetPage (post redirect-login) -> ${ok}`);
           }
         }
       } else {
         // Navigate to page (no authentication required)
         await this.browserManager.navigateToPage(url, browser);
         this.logger.debug('Page navigation completed');
+        // Ensure we're fully on the intended landing page before extraction
+        const ok = await this.browserManager.ensureOnTargetPage(browser, url, 30000);
+        this.logger.debug(`ensureOnTargetPage (no-auth) -> ${ok}`);
       }
 
       // Detect elements (retry for transient driver issues)
       let elements = [] as any[];
       for (let attempt = 1; attempt <= 3; attempt++) {
+        this.logger.debug(`Element detection attempt #${attempt}`);
         try {
           elements = await this.elementDetector.detectElements(browser);
           break;
@@ -157,6 +175,7 @@ export class UniversalPOMGenerator {
       // Generate code via MCP-style universal pattern (even without MCP) to mirror mytoca__profiles
       let pom: POM;
       if ((validatedOptions.mcpIntegration as any)?.aiConfig) {
+        this.logger.debug('Generating POM via MCP AI');
         const mcpPom = await this.mcpManager.generatePOMWithAI(elements, validatedOptions as any, {
           title: await this.browserManager.getPageTitle(browser),
           url,
@@ -164,6 +183,7 @@ export class UniversalPOMGenerator {
         });
         pom = mcpPom;
       } else {
+        this.logger.debug('Generating POM via internal universal generator');
         const mcpLike = await this.mcpManager.generatePOMWithAI(elements, validatedOptions as any, {
           title: await this.browserManager.getPageTitle(browser),
           url,
@@ -195,6 +215,7 @@ export class UniversalPOMGenerator {
 
       // Apply AI enhancements if LLM is configured
       if (validatedOptions.llmIntegration) {
+        this.logger.debug('Applying LLM enhancement');
         const enhancedPOM = await this.llmManager.enhancePOM(pom, validatedOptions.llmIntegration as any);
         Object.assign(pom, enhancedPOM);
         this.logger.debug('LLM enhancement applied');
@@ -202,6 +223,7 @@ export class UniversalPOMGenerator {
 
       // Apply MCP enhancements if MCP is configured
       if (validatedOptions.mcpIntegration) {
+        this.logger.debug('Applying MCP enhancement');
         const mcpEnhancedPOM = await this.mcpManager.enhancePOM(pom, validatedOptions.mcpIntegration as any);
         Object.assign(pom, mcpEnhancedPOM);
         this.logger.debug('MCP enhancement applied');

@@ -99,6 +99,7 @@ export class ElementDetector {
         return '';
       }
       return Array.from(document.querySelectorAll('*')).map(element => {
+        const rawClass = (typeof element.className === 'string') ? element.className : (element.getAttribute && element.getAttribute('class')) || '';
         const rect = element.getBoundingClientRect();
         const computedStyle = window.getComputedStyle(element);
         const attrs = Array.from(element.attributes).reduce((acc, attr) => { acc[attr.name] = attr.value; return acc; }, {});
@@ -112,7 +113,7 @@ export class ElementDetector {
         return {
           tagName: element.tagName.toLowerCase(),
           id: element.id || null,
-          className: element.className || null,
+          className: rawClass || null,
           text: element.textContent?.trim() || null,
           href: element.href || null,
           src: element.src || null,
@@ -264,7 +265,8 @@ export class ElementDetector {
     // Container + classes
     const containerSel = element.attributes?.['nearest-container-selector'];
     if (containerSel && element.className) {
-      const classes = element.className.split(' ').filter(Boolean).map(c => `.${c}`).join('');
+      const classStr = typeof element.className === 'string' ? element.className : '';
+      const classes = classStr.split(' ').filter(Boolean).map(c => `.${c}`).join('');
       if (classes) return `${containerSel} ${classes}`;
     }
     // Fallback to tag + attribute hints
@@ -307,7 +309,8 @@ export class ElementDetector {
     }
     // Fallback using class contains
     if (element.className) {
-      const first = element.className.split(' ').filter(Boolean)[0];
+      const classStr = typeof element.className === 'string' ? element.className : '';
+      const first = classStr.split(' ').filter(Boolean)[0];
       if (first) return `//${tag}[contains(@class, "${first}")]`;
     }
     return `//${tag}`;
@@ -337,7 +340,8 @@ export class ElementDetector {
     }
     
     if (element.className) {
-      parts.push(element.className.split(' ')[0]);
+      const classStr = typeof element.className === 'string' ? element.className : '';
+      parts.push(classStr.split(' ')[0]);
     }
     
     if (element.text) {

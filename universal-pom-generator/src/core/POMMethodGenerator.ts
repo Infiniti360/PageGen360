@@ -218,7 +218,8 @@ export class POMMethodGenerator {
     if (element.id) {
       name += element.id.charAt(0).toUpperCase() + element.id.slice(1);
     } else if (element.className) {
-      const className = element.className.split(' ')[0];
+      const classStr = typeof element.className === 'string' ? element.className : '';
+      const className = classStr.split(' ')[0];
       if (className) {
         name += className.charAt(0).toUpperCase() + className.slice(1);
       }

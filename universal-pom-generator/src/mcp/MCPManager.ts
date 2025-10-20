@@ -277,7 +277,8 @@ export class MCPManager {
 
   private isUtilityClassHeavy(el: Element): boolean {
     if (!el.className) return false;
-    const classes = el.className.split(/\s+/).filter(Boolean);
+    const classStr = typeof el.className === 'string' ? el.className : '';
+    const classes = classStr.split(/\s+/).filter(Boolean);
     if (classes.length <= 2) return false;
     const utilityPrefixes = ['flex', 'grid', 'w-', 'h-', 'p-', 'px-', 'py-', 'm-', 'mx-', 'my-', 'text-', 'bg-', 'rounded', 'justify-', 'items-', 'mt-', 'mb-', 'ml-', 'mr-', 'gap-'];
     const utilityCount = classes.filter(c => utilityPrefixes.some(p => c.startsWith(p))).length;
@@ -517,7 +518,6 @@ export class MCPManager {
       // Profile
       prof: 'profile',
       profile: 'profile',
-      account: 'profile',
       
       // Stats/Scores
       lb: 'leaderboards',
@@ -529,7 +529,6 @@ export class MCPManager {
       
       // Common UI elements
       txt: 'text',
-      btn: 'button',
       sel: 'select',
       chk: 'checkbox',
       rad: 'radio',
