@@ -1,0 +1,20 @@
+# Build artifacts
+/dist
+
+# Coverage and test outputs
+/coverage
+/test-logs
+/test-reports
+/test-screenshots
+
+# Generated POM (keep if desired; uncomment to ignore)
+#/generated-pom
+
+# Node
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
